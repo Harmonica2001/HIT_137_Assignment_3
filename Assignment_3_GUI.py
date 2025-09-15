@@ -2,12 +2,86 @@ import tkinter as tk
 from tkinter import ttk
 
 
+# ------------------------
+# Multiple Decorators
+# ------------------------
+def log_action(func):
+    """Decorator to log the action being performed"""
+    def wrapper(self, *args, **kwargs):
+        print(f"[LOG] Running {func.__name__} with args={args}")
+        return func(self, *args, **kwargs)
+    return wrapper
+
+
+def ensure_input(func):
+    """Decorator to ensure that input data is not empty"""
+    def wrapper(self, input_data):
+        if not input_data:
+            return "Error: No input provided!"
+        return func(self, input_data)
+    return wrapper
+
+
+# ------------------------
+# Base class + Polymorphism
+# ------------------------
+class ModelHandler:
+    """Base model handler"""
+
+    def run_inference(self, input_data):
+        raise NotImplementedError("Subclasses must override this method")
+
+
+# ------------------------
+# Multiple Inheritance
+# ------------------------
+class LoggerMixin:
+    """Provides logging functionality"""
+
+    def log(self, msg):
+        print(f"[LoggerMixin] {msg}")
+
+
+# ------------------------
+# Polymorphic subclasses
+# ------------------------
+class TextModelHandler(ModelHandler, LoggerMixin):
+    """Handler for text models"""
+
+    @log_action
+    @ensure_input   # multiple decorators
+    def run_inference(self, input_data):
+        self.log("TextModelHandler is generating text...")
+        # Fake model output for now
+        return f"Generated text from input: {input_data}"
+
+
+class ImageModelHandler(ModelHandler, LoggerMixin):
+    """Handler for image models"""
+
+    @log_action
+    @ensure_input   # multiple decorators
+    def run_inference(self, input_data):
+        self.log("ImageModelHandler is classifying image...")
+        # Fake model output for now
+        return f"Classified image '{input_data}' as: Cat"
+
+
+# ------------------------
+# Main Tkinter Application
+# ------------------------
 class AIApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
         self.title("AI Model Integration GUI")
         self.geometry("800x600")
+
+        # Model handlers for polymorphism
+        self.handlers = {
+            "Text Generator (GPT-2)": TextModelHandler(),
+            "Image Classifier (ViT)": ImageModelHandler()
+        }
 
         # Create Notebook (tabs)
         notebook = ttk.Notebook(self)
@@ -35,7 +109,7 @@ class AIApp(tk.Tk):
         self.build_model_info_tab()
 
     def build_input_tab(self):
-        label = ttk.Label(self.input_tab, text="Select input type (Text, Image, Audio):")
+        label = ttk.Label(self.input_tab, text="Select input type (Text or Image):")
         label.pack(pady=10)
 
         self.input_type = tk.StringVar()
@@ -73,6 +147,19 @@ class AIApp(tk.Tk):
         self.explain_box = tk.Text(self.explanation_tab, wrap="word", height=20)
         self.explain_box.pack(expand=True, fill="both", padx=10, pady=10)
 
+        # Pre-fill explanations
+        explanation_text = (
+            "Encapsulation: Each tab UI is built inside its own method.\n"
+            "Inheritance: AIApp inherits from tk.Tk.\n"
+            "Method Overriding: __init__ overrides tk.Tk constructor.\n"
+            "Polymorphism: ModelHandler subclasses (TextModelHandler, ImageModelHandler)\n"
+            "   provide different run_inference implementations.\n"
+            "Multiple Inheritance: TextModelHandler and ImageModelHandler inherit from both\n"
+            "   ModelHandler and LoggerMixin.\n"
+            "Multiple Decorators: log_action and ensure_input wrap run_inference methods.\n"
+        )
+        self.explain_box.insert(tk.END, explanation_text)
+
     def build_model_info_tab(self):
         label = ttk.Label(self.model_info_tab, text="Model Information:")
         label.pack(pady=10)
@@ -80,10 +167,27 @@ class AIApp(tk.Tk):
         self.model_info_box = tk.Text(self.model_info_tab, wrap="word", height=20)
         self.model_info_box.pack(expand=True, fill="both", padx=10, pady=10)
 
+        info_text = (
+            "Text Generator (GPT-2): A small transformer model for text generation.\n"
+            "Image Classifier (ViT): Vision Transformer model for classifying images.\n"
+        )
+        self.model_info_box.insert(tk.END, info_text)
+
     def run_inference(self):
-        # Placeholder function
+        # Get selected model + input
+        model_name = self.model_choice.get()
+        input_data = self.input_entry.get()
+
+        handler = self.handlers.get(model_name)
+
+        if handler:
+            result = handler.run_inference(input_data)
+        else:
+            result = "Please select a model."
+
+        # Display output
         self.output_box.delete("1.0", tk.END)
-        self.output_box.insert(tk.END, f"Running {self.model_choice.get()} on input: {self.input_entry.get()}")
+        self.output_box.insert(tk.END, result)
 
 
 if __name__ == "__main__":

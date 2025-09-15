@@ -2,17 +2,11 @@
 # Use a pipeline as a high-level helper
 from transformers import pipeline
 
-pipe = pipeline("image-text-to-text", model="Qwen/Qwen2.5-VL-7B-Instruct")
+pipe = pipeline("text-generation", model="openbmb/MiniCPM4.1-8B", trust_remote_code=True)
 messages = [
-    {
-        "role": "user",
-        "content": [
-            {"type": "image", "url": "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/p-blog/candy.JPG"},
-            {"type": "text", "text": "What animal is on the candy?"}
-        ]
-    },
+    {"role": "user", "content": "Who are you?"},
 ]
-pipe(text=messages)
+pipe(messages)
 
 #%%
 
