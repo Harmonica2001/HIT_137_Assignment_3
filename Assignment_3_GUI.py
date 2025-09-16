@@ -1,193 +1,106 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 
 
-# ------------------------
-# Multiple Decorators
-# ------------------------
-def log_action(func):
-    """Decorator to log the action being performed"""
-    def wrapper(self, *args, **kwargs):
-        print(f"[LOG] Running {func.__name__} with args={args}")
-        return func(self, *args, **kwargs)
-    return wrapper
-
-
-def ensure_input(func):
-    """Decorator to ensure that input data is not empty"""
-    def wrapper(self, input_data):
-        if not input_data:
-            return "Error: No input provided!"
-        return func(self, input_data)
-    return wrapper
-
-
-# ------------------------
-# Base class + Polymorphism
-# ------------------------
-class ModelHandler:
-    """Base model handler"""
-
-    def run_inference(self, input_data):
-        raise NotImplementedError("Subclasses must override this method")
-
-
-# ------------------------
-# Multiple Inheritance
-# ------------------------
-class LoggerMixin:
-    """Provides logging functionality"""
-
-    def log(self, msg):
-        print(f"[LoggerMixin] {msg}")
-
-
-# ------------------------
-# Polymorphic subclasses
-# ------------------------
-class TextModelHandler(ModelHandler, LoggerMixin):
-    """Handler for text models"""
-
-    @log_action
-    @ensure_input   # multiple decorators
-    def run_inference(self, input_data):
-        self.log("TextModelHandler is generating text...")
-        # Fake model output for now
-        return f"Generated text from input: {input_data}"
-
-
-class ImageModelHandler(ModelHandler, LoggerMixin):
-    """Handler for image models"""
-
-    @log_action
-    @ensure_input   # multiple decorators
-    def run_inference(self, input_data):
-        self.log("ImageModelHandler is classifying image...")
-        # Fake model output for now
-        return f"Classified image '{input_data}' as: Cat"
-
-
-# ------------------------
-# Main Tkinter Application
-# ------------------------
 class AIApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("AI Model Integration GUI")
-        self.geometry("800x600")
+        self.title("Tkinter AI GUI")
+        self.geometry("900x700")
 
-        # Model handlers for polymorphism
-        self.handlers = {
-            "Text Generator (GPT-2)": TextModelHandler(),
-            "Image Classifier (ViT)": ImageModelHandler()
-        }
+        # Create menu bar
+        menubar = tk.Menu(self)
+        self.config(menu=menubar)
 
-        # Create Notebook (tabs)
-        notebook = ttk.Notebook(self)
-        notebook.pack(expand=True, fill="both")
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Exit", command=self.quit)
 
-        # Create tabs
-        self.input_tab = ttk.Frame(notebook)
-        self.model_tab = ttk.Frame(notebook)
-        self.output_tab = ttk.Frame(notebook)
-        self.explanation_tab = ttk.Frame(notebook)
-        self.model_info_tab = ttk.Frame(notebook)
+        models_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Models", menu=models_menu)
+        models_menu.add_command(label="Load Model")
 
-        # Add tabs to notebook
-        notebook.add(self.input_tab, text="Input Selection")
-        notebook.add(self.model_tab, text="Model Selection")
-        notebook.add(self.output_tab, text="Output")
-        notebook.add(self.explanation_tab, text="Explanations")
-        notebook.add(self.model_info_tab, text="Model Info")
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="About")
 
-        # Build content in each tab
-        self.build_input_tab()
-        self.build_model_tab()
-        self.build_output_tab()
-        self.build_explanation_tab()
-        self.build_model_info_tab()
+        # ---------------- Model Selection Section ----------------
+        model_frame = ttk.LabelFrame(self, text="Model Selection")
+        model_frame.pack(fill="x", padx=10, pady=5)
 
-    def build_input_tab(self):
-        label = ttk.Label(self.input_tab, text="Select input type (Text or Image):")
-        label.pack(pady=10)
-
-        self.input_type = tk.StringVar()
-        dropdown = ttk.Combobox(self.input_tab, textvariable=self.input_type,
-                                values=["Text", "Image"], state="readonly")
-        dropdown.pack(pady=10)
-
-        self.input_entry = ttk.Entry(self.input_tab, width=50)
-        self.input_entry.pack(pady=10)
-
-    def build_model_tab(self):
-        label = ttk.Label(self.model_tab, text="Select AI model:")
-        label.pack(pady=10)
-
+        ttk.Label(model_frame, text="Select Model:").pack(side="left", padx=5, pady=5)
         self.model_choice = tk.StringVar()
-        dropdown = ttk.Combobox(self.model_tab, textvariable=self.model_choice,
-                                values=["Text Generator (GPT-2)", "Image Classifier (ViT)"],
-                                state="readonly")
-        dropdown.pack(pady=10)
+        model_dropdown = ttk.Combobox(model_frame, textvariable=self.model_choice,
+                                      values=["Text-to-Image", "Image Classification", "Text Generation"],
+                                      state="readonly", width=30)
+        model_dropdown.pack(side="left", padx=5, pady=5)
 
-        run_button = ttk.Button(self.model_tab, text="Run Inference", command=self.run_inference)
-        run_button.pack(pady=20)
+        ttk.Button(model_frame, text="Load Model").pack(side="left", padx=5, pady=5)
 
-    def build_output_tab(self):
-        label = ttk.Label(self.output_tab, text="Model Output:")
-        label.pack(pady=10)
+        # ---------------- User Input Section ----------------
+        input_frame = ttk.LabelFrame(self, text="User Input Section")
+        input_frame.pack(fill="x", padx=10, pady=5)
 
-        self.output_box = tk.Text(self.output_tab, wrap="word", height=20)
-        self.output_box.pack(expand=True, fill="both", padx=10, pady=10)
+        self.input_type = tk.StringVar(value="Text")
+        ttk.Radiobutton(input_frame, text="Text", variable=self.input_type, value="Text").pack(side="left", padx=5)
+        ttk.Radiobutton(input_frame, text="Image", variable=self.input_type, value="Image").pack(side="left", padx=5)
 
-    def build_explanation_tab(self):
-        label = ttk.Label(self.explanation_tab, text="OOP Concepts Explanation:")
-        label.pack(pady=10)
+        ttk.Button(input_frame, text="Browse", command=self.browse_file).pack(side="left", padx=5)
 
-        self.explain_box = tk.Text(self.explanation_tab, wrap="word", height=20)
-        self.explain_box.pack(expand=True, fill="both", padx=10, pady=10)
+        self.input_entry = tk.Text(input_frame, height=5, width=60)
+        self.input_entry.pack(padx=10, pady=10, fill="x")
 
-        # Pre-fill explanations
-        explanation_text = (
-            "Encapsulation: Each tab UI is built inside its own method.\n"
-            "Inheritance: AIApp inherits from tk.Tk.\n"
-            "Method Overriding: __init__ overrides tk.Tk constructor.\n"
-            "Polymorphism: ModelHandler subclasses (TextModelHandler, ImageModelHandler)\n"
-            "   provide different run_inference implementations.\n"
-            "Multiple Inheritance: TextModelHandler and ImageModelHandler inherit from both\n"
-            "   ModelHandler and LoggerMixin.\n"
-            "Multiple Decorators: log_action and ensure_input wrap run_inference methods.\n"
-        )
-        self.explain_box.insert(tk.END, explanation_text)
+        button_frame = ttk.Frame(input_frame)
+        button_frame.pack(fill="x", pady=5)
+        ttk.Button(button_frame, text="Run Model 1").pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Run Model 2").pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Clear", command=self.clear_input).pack(side="left", padx=5)
 
-    def build_model_info_tab(self):
-        label = ttk.Label(self.model_info_tab, text="Model Information:")
-        label.pack(pady=10)
+        # ---------------- Output Section ----------------
+        output_frame = ttk.LabelFrame(self, text="Model Output Section")
+        output_frame.pack(fill="both", padx=10, pady=5, expand=True)
 
-        self.model_info_box = tk.Text(self.model_info_tab, wrap="word", height=20)
-        self.model_info_box.pack(expand=True, fill="both", padx=10, pady=10)
+        ttk.Label(output_frame, text="Output Display:").pack(anchor="w", padx=5, pady=5)
+        self.output_box = tk.Text(output_frame, wrap="word", height=10)
+        self.output_box.pack(fill="both", expand=True, padx=10, pady=5)
 
-        info_text = (
-            "Text Generator (GPT-2): A small transformer model for text generation.\n"
-            "Image Classifier (ViT): Vision Transformer model for classifying images.\n"
-        )
-        self.model_info_box.insert(tk.END, info_text)
+        # ---------------- Model Info & Explanations ----------------
+        info_explain_frame = ttk.LabelFrame(self, text="Model Information & Explanation")
+        info_explain_frame.pack(fill="both", padx=10, pady=5, expand=True)
 
-    def run_inference(self):
-        # Get selected model + input
-        model_name = self.model_choice.get()
-        input_data = self.input_entry.get()
+        # Left: Model Info
+        model_info_frame = ttk.Frame(info_explain_frame)
+        model_info_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
 
-        handler = self.handlers.get(model_name)
+        ttk.Label(model_info_frame, text="Selected Model Info:", font=("Arial", 10, "bold")).pack(anchor="w")
+        self.model_info_box = tk.Text(model_info_frame, wrap="word", height=10)
+        self.model_info_box.pack(fill="both", expand=True, padx=5, pady=5)
 
-        if handler:
-            result = handler.run_inference(input_data)
-        else:
-            result = "Please select a model."
+        # Right: OOP Explanations
+        explain_frame = ttk.Frame(info_explain_frame)
+        explain_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
 
-        # Display output
+        ttk.Label(explain_frame, text="OOP Concepts Explanation:", font=("Arial", 10, "bold")).pack(anchor="w")
+        self.explain_box = tk.Text(explain_frame, wrap="word", height=10)
+        self.explain_box.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # ---------------- Notes Section ----------------
+        notes_frame = ttk.LabelFrame(self, text="Notes")
+        notes_frame.pack(fill="x", padx=10, pady=5)
+
+        self.notes_box = tk.Text(notes_frame, wrap="word", height=3)
+        self.notes_box.pack(fill="x", padx=5, pady=5)
+
+    def browse_file(self):
+        file_path = filedialog.askopenfilename(title="Select File")
+        if file_path:
+            self.input_entry.delete("1.0", tk.END)
+            self.input_entry.insert(tk.END, file_path)
+
+    def clear_input(self):
+        self.input_entry.delete("1.0", tk.END)
         self.output_box.delete("1.0", tk.END)
-        self.output_box.insert(tk.END, result)
 
 
 if __name__ == "__main__":
