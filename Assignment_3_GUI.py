@@ -3,6 +3,13 @@ from tkinter import ttk, filedialog
 from model_manager import ModelManager
 from Logger import Logger
 
+def validate_input(func): #Decorator to validate user input selection.
+
+    def wrapper(self, input_data):
+        if not isinstance(input_data, str) or not input_data.strip():
+            return "Invalid input: Please provide a non-empty string."
+        return func(self, input_data)
+    return wrapper
 
 class AIApp(tk.Tk,Logger,ModelManager):
     def __init__(self):
@@ -112,7 +119,7 @@ class AIApp(tk.Tk,Logger,ModelManager):
         selected = self.model_choice.get()
         if not selected:
             self.model_info_box.delete("1.0", tk.END)
-            self.model_info_box.insert(tk.END, "⚠️ Please select a model first.")
+            self.model_info_box.insert(tk.END, "Please select a model from the dropdown menu")
             return
 
         self.loaded_model = selected
@@ -136,7 +143,7 @@ class AIApp(tk.Tk,Logger,ModelManager):
                 "Free on Hugging Face.\n"
                 "Description: It will condense large pieces of text into concise sentences.\n"
             )
-
+    @validate_input
     def run_model(self):
         input_data = self.input_entry.get("1.0", tk.END).strip()
         result = self.model_manager.run_model(input_data)

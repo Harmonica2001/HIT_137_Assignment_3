@@ -1,7 +1,8 @@
+
+
 class ModelManager:
     def __init__(self):
-        self.loaded_model = None
-
+        self.loaded_model = None    
     def load_model(self, model_choice):
         """Load model info based on selection."""
         if model_choice == "Text-to-Image":
@@ -11,7 +12,7 @@ class ModelManager:
             self.loaded_model = model_choice
             return "Model: pegasus-Large (Text Summarization)\nCategory: NLP\nFree on Hugging Face."
         else:
-            return "Please select a model."
+            return "Please select a in order to run it model."
 
     def run_model(self, input_data):
         """Run selected model on user input."""
