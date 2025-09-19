@@ -112,15 +112,24 @@ class AIApp(tk.Tk):
         ttk.Label(output_frame, text="Output Display:").pack(anchor="w", padx=5, pady=5)
         self.output_box = tk.Text(output_frame, wrap="word", height=10)
         self.output_box.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        info_explain_frame = ttk.LabelFrame(self, text="Model Information & Explanation")
+        info_explain_frame.pack(fill="both", padx=10, pady=5, expand=True)
+        # Left: Model Info
+        model_info_frame = ttk.Frame(info_explain_frame)
+        model_info_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
 
-        # ---------------- Model Info ----------------
-        info_frame = ttk.LabelFrame(self, text="Model Information & Explanation")
-        info_frame.pack(fill="both", padx=10, pady=5, expand=True)
-
-        ttk.Label(info_frame, text="Selected Model Info:", font=("Arial", 10, "bold")).pack(anchor="w")
-        self.model_info_box = tk.Text(info_frame, wrap="word", height=10)
+        ttk.Label(model_info_frame, text="Selected Model Info:", font=("Arial", 10, "bold")).pack(anchor="w")
+        self.model_info_box = tk.Text(model_info_frame, wrap="word", height=10)
         self.model_info_box.pack(fill="both", expand=True, padx=5, pady=5)
 
+        # Right: OOP Explanations
+        explain_frame = ttk.Frame(info_explain_frame)
+        explain_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
+
+        ttk.Label(explain_frame, text="OOP Concepts Explanation:", font=("Arial", 10, "bold")).pack(anchor="w")
+        self.explain_box = tk.Text(explain_frame, wrap="word", height=10)
+        self.explain_box.pack(fill="both", expand=True, padx=5, pady=5)
         # ---------------- Notes Section ----------------
         notes_frame = ttk.LabelFrame(self, text="Notes")
         notes_frame.pack(fill="x", padx=10, pady=5)
@@ -194,3 +203,8 @@ class AIApp(tk.Tk):
 if __name__ == "__main__":
     app = AIApp()
     app.mainloop()
+
+
+
+
+
