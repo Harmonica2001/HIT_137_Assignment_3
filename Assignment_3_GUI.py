@@ -1,26 +1,57 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
-from model_manager import ModelManager
-from Logger import Logger
+from functools import wraps
 
-def validate_input(func): #Decorator to validate user input selection.
 
-    def wrapper(self, input_data):
-        if not isinstance(input_data, str) or not input_data.strip():
-            return "Invalid input: Please provide a non-empty string."
-        return func(self, input_data)
+# ---------------------- DECORATORS ----------------------
+def log_action(func):
+    """Decorator for logging actions."""
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        print(f"[LOG] Running {func.__name__} with args={args} kwargs={kwargs}")
+        return func(self, *args, **kwargs)
     return wrapper
 
-class AIApp(tk.Tk,Logger,ModelManager):
+
+def validate_input(func):
+    """Decorator to validate that input is non-empty string."""
+    @wraps(func)
+    def wrapper(self, input_data, *args, **kwargs):
+        if not isinstance(input_data, str) or not input_data.strip():
+            return "Invalid input: Please provide a non-empty string."
+        return func(self, input_data, *args, **kwargs)
+    return wrapper
+
+
+# ---------------------- POLYMORPHISM: Base + Subclasses ----------------------
+class BaseModel:
+    """Base class (polymorphism)"""
+    def run(self, input_data):
+        raise NotImplementedError("Subclasses must override this method")
+
+
+class TextToImageModel(BaseModel):
+    def run(self, input_data):
+        return f"[Image generated from prompt: '{input_data}']"
+
+
+class TextSummarizationModel(BaseModel):
+    def run(self, input_data):
+        return f"[Summary of text: '{input_data[:50]}...']"
+
+
+# ---------------------- GUI ----------------------
+class AIApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Tkinter AI GUI")
         self.geometry("900x700")
 
-        # Manager for model operations
-        self.model_manager = ModelManager()
+        # ---------- Encapsulation: private attributes ----------
+        self._loaded_model = None
+        self._notes = ""
 
-        # Menu
+        # ---------------- Menu ----------------
         menubar = tk.Menu(self)
         self.config(menu=menubar)
 
@@ -71,7 +102,7 @@ class AIApp(tk.Tk,Logger,ModelManager):
 
         button_frame = ttk.Frame(input_frame)
         button_frame.pack(fill="x", pady=5)
-        ttk.Button(button_frame, text="Run Model", command=self.run_model).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Run Model", command=self._run_model_wrapper).pack(side="left", padx=5)
         ttk.Button(button_frame, text="Clear", command=self.clear_input).pack(side="left", padx=5)
 
         # ---------------- Output Section ----------------
@@ -82,23 +113,13 @@ class AIApp(tk.Tk,Logger,ModelManager):
         self.output_box = tk.Text(output_frame, wrap="word", height=10)
         self.output_box.pack(fill="both", expand=True, padx=10, pady=5)
 
-        # ---------------- Model Info & Explanations ----------------
-        info_explain_frame = ttk.LabelFrame(self, text="Model Information & Explanation")
-        info_explain_frame.pack(fill="both", padx=10, pady=5, expand=True)
+        # ---------------- Model Info ----------------
+        info_frame = ttk.LabelFrame(self, text="Model Information & Explanation")
+        info_frame.pack(fill="both", padx=10, pady=5, expand=True)
 
-        model_info_frame = ttk.Frame(info_explain_frame)
-        model_info_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
-
-        ttk.Label(model_info_frame, text="Selected Model Info:", font=("Arial", 10, "bold")).pack(anchor="w")
-        self.model_info_box = tk.Text(model_info_frame, wrap="word", height=10)
+        ttk.Label(info_frame, text="Selected Model Info:", font=("Arial", 10, "bold")).pack(anchor="w")
+        self.model_info_box = tk.Text(info_frame, wrap="word", height=10)
         self.model_info_box.pack(fill="both", expand=True, padx=5, pady=5)
-
-        explain_frame = ttk.Frame(info_explain_frame)
-        explain_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
-
-        ttk.Label(explain_frame, text="OOP Concepts Explanation:", font=("Arial", 10, "bold")).pack(anchor="w")
-        self.explain_box = tk.Text(explain_frame, wrap="word", height=10)
-        self.explain_box.pack(fill="both", expand=True, padx=5, pady=5)
 
         # ---------------- Notes Section ----------------
         notes_frame = ttk.LabelFrame(self, text="Notes")
@@ -106,6 +127,23 @@ class AIApp(tk.Tk,Logger,ModelManager):
 
         self.notes_box = tk.Text(notes_frame, wrap="word", height=3)
         self.notes_box.pack(fill="x", padx=5, pady=5)
+
+    # ---------------- Encapsulation ----------------
+    @property
+    def loaded_model(self):
+        return self._loaded_model
+
+    @loaded_model.setter
+    def loaded_model(self, model):
+        self._loaded_model = model
+
+    @property
+    def notes(self):
+        return self._notes
+
+    @notes.setter
+    def notes(self, text):
+        self._notes = text
 
     # ---------------- Methods ----------------
     def toggle_input(self):
@@ -115,38 +153,30 @@ class AIApp(tk.Tk,Logger,ModelManager):
             self.browse_btn.pack_forget()
 
     def load_model(self):
-        """Load the selected model and display model info."""
+        """Override-able method: loads model with polymorphism."""
         selected = self.model_choice.get()
-        if not selected:
-            self.model_info_box.delete("1.0", tk.END)
-            self.model_info_box.insert(tk.END, "Please select a model from the dropdown menu")
-            return
-
-        self.loaded_model = selected
         self.model_info_box.delete("1.0", tk.END)
 
         if selected == "Text-to-Image":
-            self.model_info_box.insert(
-                tk.END,
-                "Model: black-forest-labs/FLUX.1-dev (Text-to-Image)\n"
-                "Category: Image Generation\n"
-                "Free on Hugging Face.\n"
-                "Description: This model generates images based off text prompts.\n"
-            )
+            self.loaded_model = TextToImageModel()
+            self.model_info_box.insert(tk.END, "Model: black-forest-labs/FLUX.1-dev\nCategory: Image Generation\nDescription: Generates images from text prompts.\n")
 
         elif selected == "Text Summarization":
-            # Display BOTH models’ info side by side
-            self.model_info_box.insert(
-                tk.END,
-                "Model 2: pegasus-Large (Text Summarization)\n"
-                "Category: Text Summarization\n"
-                "Free on Hugging Face.\n"
-                "Description: It will condense large pieces of text into concise sentences.\n"
-            )
+            self.loaded_model = TextSummarizationModel()
+            self.model_info_box.insert(tk.END, "Model: pegasus-Large\nCategory: Text Summarization\nDescription: Summarizes long texts into concise sentences.\n")
+
+    @log_action
     @validate_input
-    def run_model(self):
+    def run_model(self, input_data):
+        """Run the model with multiple decorators."""
+        if not self.loaded_model:
+            return "No model loaded."
+        return self.loaded_model.run(input_data)
+
+    def _run_model_wrapper(self):
+        """Fetches text input and runs decorated run_model()."""
         input_data = self.input_entry.get("1.0", tk.END).strip()
-        result = self.model_manager.run_model(input_data)
+        result = self.run_model(input_data)
         self.output_box.delete("1.0", tk.END)
         self.output_box.insert(tk.END, result)
 
@@ -159,3 +189,8 @@ class AIApp(tk.Tk,Logger,ModelManager):
     def clear_input(self):
         self.input_entry.delete("1.0", tk.END)
         self.output_box.delete("1.0", tk.END)
+
+
+if __name__ == "__main__":
+    app = AIApp()
+    app.mainloop()
