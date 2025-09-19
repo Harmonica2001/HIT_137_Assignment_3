@@ -32,7 +32,7 @@ class AIApp(tk.Tk):
         ttk.Label(model_frame, text="Select Model:").pack(side="left", padx=5, pady=5)
         self.model_choice = tk.StringVar()
         model_dropdown = ttk.Combobox(model_frame, textvariable=self.model_choice,
-                                      values=["Text-to-Image", "Image Classification", "Text Generation"],
+                                      values=["Text-to-Image", "Text Generation"],
                                       state="readonly", width=30)
         model_dropdown.pack(side="left", padx=5, pady=5)
 
@@ -41,7 +41,7 @@ class AIApp(tk.Tk):
         # ---------------- User Input Section ----------------
         input_frame = ttk.LabelFrame(self, text="User Input Section")
         input_frame.pack(fill="x", padx=10, pady=5)
-
+    
         self.input_type = tk.StringVar(value="Text")
         ttk.Radiobutton(input_frame, text="Text", variable=self.input_type, value="Text").pack(side="left", padx=5)
         ttk.Radiobutton(input_frame, text="Image", variable=self.input_type, value="Image").pack(side="left", padx=5)
