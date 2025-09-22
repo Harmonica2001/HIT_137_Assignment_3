@@ -22,22 +22,16 @@ def ensure_input(func):
         return func(self,model_details,input_data)
     return wrapper
 
-
-# ------------------------
-# Base class + Polymorphism
-# ------------------------
 class ModelHandler:
     """Base model handler"""
     def __init__(self):
-    #api key variable using protect encapsulation
+    # encapsulation is used here to make sure that the api key is not accessed/modified outside this class
         self._api_key_value="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"
     def run_inference(self,model_details,input_data):
         raise NotImplementedError("Subclasses must override this method")
 
 
-# ------------------------
-# Multiple Inheritance
-# ------------------------
+
 class LoggerMixin:
     """Provides logging functionality"""
 
@@ -45,15 +39,13 @@ class LoggerMixin:
         print(f"[LoggerMixin] {msg}")
 
 
-# ------------------------
-# Polymorphic subclasses
-# ------------------------
+# Polymorphism: this is used here to define the same method 'run_interfence ' in different classes with different implementations
+# Multiple Inheritance: both the TextModelHandler and ImageModelHandler classes inherit from the ModelHandler class and LoggerMixin class.
 class TextModelHandler(ModelHandler, LoggerMixin):
     """Handler for text models"""
     
     @log_action
     @ensure_input   # multiple decorators
-    
     def run_inference(self,model_details,input_data):
         '''
         Parameters:
@@ -84,7 +76,6 @@ class ImageModelHandler(ModelHandler, LoggerMixin):
         Results:
         The model will return an image of the user's input
     '''
-    
     @log_action
     @ensure_input   # multiple decorators
     def run_inference(self,model_details,input_data):

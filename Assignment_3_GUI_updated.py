@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 
 
 # ---------------------- DECORATORS ----------------------
+# theses are examples of decorators for log_action and validate_input 
 def log_action(func):
     """Decorator for logging actions."""
     @wraps(func)
@@ -26,15 +27,15 @@ def validate_input(func):
     
 
 # ---------------------- GUI ----------------------
-class AIApp(tk.Tk):
-    def __init__(self):
-        super().__init__()
+class AIApp(tk.Tk): # AI app is inheriting from Tk class
+    def __init__(self): # this method overrides the __init__ method from tkinter
+        super().__init__() 
         self.title("Tkinter AI GUI")
         self.geometry("900x700")
 
-        # ---------- Encapsulation: private attributes ----------
+        # Encapsulation: private attributes the loaded model and notes are private to the class
         self._loaded_model = None
-        self._notes = ""
+        self._notes = "" 
 
         # ---------------- Menu ----------------
         menubar = tk.Menu(self)
@@ -176,8 +177,13 @@ class AIApp(tk.Tk):
                 "Method overriding:??"
             )
             self.model_info_box.insert(tk.END, "Model: pegasus-Large\nCategory: Text Summarization\nDescription: Summarizes long texts into concise sentences.\n")
+# this is an example of polymorphism, the function call is the same but the output hanlding is polymorphic
+# the output handling is different based on the model type
 
-    def run_model(self):
+
+    @validate_input # the validate_input decorator is used to make sure a model name was chosen
+    @log_action # this logs that a model was loaded
+    def run_model(self): 
         if self.model_name == "Text-to-Image":
             self.modela = modelrunner(self.model_parameters, self.model_name, str(self.input_entry.get("1.0", "end-1c")))
             self.result = self.modela.run_model_result()
@@ -215,5 +221,3 @@ class AIApp(tk.Tk):
         else:
             self.input_entry.delete("1.0", tk.END)
             self.output_box.delete("1.0", tk.END)
-
-
