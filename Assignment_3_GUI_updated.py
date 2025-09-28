@@ -5,7 +5,6 @@ from model_loader import model_inference, modelrunner
 from PIL import Image, ImageTk
 
 
-# ---------------------- DECORATORS ----------------------
 # theses are examples of decorators for log_action and validate_input 
 def log_action(func):
     """Decorator for logging actions."""
@@ -25,17 +24,15 @@ def validate_input(func):
         return func(self, input_data, *args, **kwargs)
     return wrapper
     
-
 # ---------------------- GUI ----------------------
-class AIApp(tk.Tk): # AI app is inheriting from Tk class
-    def __init__(self): # this method overrides the __init__ method from tkinter
-        super().__init__() 
+class AIApp(tk.Tk):  # AI app is inheriting from Tk class
+    def __init__(self):  # this method overrides the __init__ method from tkinter
+        super().__init__()
         self.title("Tkinter AI GUI")
         self.geometry("900x700")
-
         # Encapsulation: private attributes the loaded model and notes are private to the class
         self._loaded_model = None
-        self._notes = "" 
+        self._notes = ""
 
         # ---------------- Menu ----------------
         menubar = tk.Menu(self)
@@ -46,7 +43,7 @@ class AIApp(tk.Tk): # AI app is inheriting from Tk class
         menubar.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Exit", command=self.quit)
 
-        # Models menu (with dropdown options opening new pages)
+        # Models menu
         models_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Models", menu=models_menu)
         models_menu.add_command(label="Text-to-Image", command=self.open_text_to_image_page)
@@ -72,12 +69,14 @@ class AIApp(tk.Tk): # AI app is inheriting from Tk class
         )
         self.model_dropdown.pack(side="left", padx=5, pady=5)
 
-        ttk.Button(model_frame, text="Load Model", command=self.inference_runner).pack(side="left", padx=5, pady=5)
+        ttk.Button(model_frame, text="Load Model", command=self.inference_runner).pack(
+            side="left", padx=5, pady=5
+        )
 
         # ---------------- Input Section ----------------
         input_frame = ttk.LabelFrame(
             self,
-            text="User Input Section: Enter a brief description of the image you want to create if you've chosen the Text to Image model. If you want to summarize text, you can type it in or upload a text file."
+            text="User Input Section: Enter text for summarization or a description for image generation."
         )
         input_frame.pack(fill="x", padx=10, pady=5)
 
@@ -100,6 +99,7 @@ class AIApp(tk.Tk): # AI app is inheriting from Tk class
         self.output_box = tk.Text(output_frame, wrap="word", height=10)
         self.output_box.pack(fill="both", expand=True, padx=10, pady=5)
 
+        # ---------------- Info + Explanation ----------------
         info_explain_frame = ttk.LabelFrame(self, text="Model Information & Explanation")
         info_explain_frame.pack(fill="both", padx=10, pady=5, expand=True)
 
@@ -116,8 +116,11 @@ class AIApp(tk.Tk): # AI app is inheriting from Tk class
         explain_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
 
         ttk.Label(explain_frame, text="OOP Concepts Explanation:", font=("Arial", 10, "bold")).pack(anchor="w")
-        self.explain_box = tk.Text(explain_frame, wrap="word", height=10)
+        self.explain_box = tk.Text(explain_frame, wrap="word", height=100)
         self.explain_box.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Show OOP concepts right away
+        self.show_oop_explanations()
 
         # ---------------- Notes Section ----------------
         notes_frame = ttk.LabelFrame(self, text="Notes")
@@ -126,6 +129,22 @@ class AIApp(tk.Tk): # AI app is inheriting from Tk class
         self.notes_box = tk.Text(notes_frame, wrap="word", height=3)
         self.notes_box.pack(fill="x", padx=5, pady=5)
 
+
+    # ---------------- Helper Methods ----------------
+    def show_oop_explanations(self):
+        """Always display OOP explanations in the right-hand section."""
+        self.explain_box.delete("1.0", tk.END)
+        self.explain_box.insert(
+            tk.END,
+                "Inheritance:\nThe AIApp is inheriting from the tkinter class.\n" 
+                "The TextModelHandler and ImageModelHandler inherit from the ModelHandler and LoggerMixin class\n\n"
+                "Encapsulation:\nIt is used in the AIApp to keep the AI model's attributes private\n"
+                "It is also used on the inference api key in 'model_loaded.py' to make sure it can't be edited or accessed outside the class\n\n"
+                "Polymorphism:\nThe 'runmodel' function has polymorphic output hanlding. Based on the model type the function runs differently\n"
+                "The 'run_inference' method is defined in both the TextModelHandler and ImageModelHandler classes with different implementations\n\n"
+                "Decorators:\nThe decorators log_action and validate_input were made and used before the run model function\n\n"
+                "Method overriding:\nAn init method is overridden from the tkinter class.\n\n"
+        )
     # ---------------- Menu Command Methods ----------------
     def open_text_to_image_page(self):
         win = tk.Toplevel(self)
@@ -148,39 +167,22 @@ class AIApp(tk.Tk): # AI app is inheriting from Tk class
         tk.Label(win, text="Team Members Information", font=("Arial", 12, "bold")).pack(pady=10)
         tk.Text(win, wrap="word", height=20, width=60).pack(padx=10, pady=10, fill="both", expand=True)
 
-    # ---------------- Model Methods ----------------
+
+# ---------------- Model Methods ----------------
+
     def inference_runner(self):
         p1 = model_inference(self.model_choice)
         self.model_parameters, self.model_name = p1.run_inferences()
         print(self.model_name)
         if self.model_name == "Text-to-Image":
             self.model_info_box.delete("1.0", tk.END)
-            self.explain_box.delete("1.0", tk.END)
-            self.explain_box.insert(
-                tk.END,
-                "Inheritance: Used in Text model and Image model Handlers, inheriting from Model Handler class\n"
-                "Encapsulation: Implemented on the inference api key with PROTECTED status\n"
-                "Polymorphism: Utilized on the run inference function\n"
-                "Decorators: Utilized on the log action and ensure input functions\n"
-                "Method overriding:??"
-            )
             self.model_info_box.insert(tk.END, "Model: black-forest-labs/FLUX.1-dev\nCategory: Image Generation\nDescription: Generates images from text prompts.\n")
         else:
             self.model_info_box.delete("1.0", tk.END)
-            self.explain_box.delete("1.0", tk.END)
-            self.explain_box.insert(
-                tk.END,
-                "Inheritance: Used in Text model and Image model Handlers, inheriting from Model Handler class\n"
-                "Encapsulation: Implemented on the inference api key with PROTECTED status\n"
-                "Polymorphism: Utilized on the run inference function\n"
-                "Decorators: Utilized on the log action and ensure input functions\n"
-                "Method overriding:??"
-            )
             self.model_info_box.insert(tk.END, "Model: pegasus-Large\nCategory: Text Summarization\nDescription: Summarizes long texts into concise sentences.\n")
-# this is an example of polymorphism, the function call is the same but the output hanlding is polymorphic
+
+# Below is an example of polymorphism, the function call is the same but the output hanlding is polymorphic
 # the output handling is different based on the model type
-
-
     @validate_input # the validate_input decorator is used to make sure a model name was chosen
     @log_action # this logs that a model was loaded
     def run_model(self): 
@@ -221,3 +223,6 @@ class AIApp(tk.Tk): # AI app is inheriting from Tk class
         else:
             self.input_entry.delete("1.0", tk.END)
             self.output_box.delete("1.0", tk.END)
+
+
+
