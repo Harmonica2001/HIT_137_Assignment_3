@@ -226,3 +226,4 @@ class AIApp(tk.Tk):  # AI app is inheriting from Tk class
 
 
 
+# Adnan
