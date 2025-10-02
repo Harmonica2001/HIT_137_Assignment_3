@@ -5,6 +5,9 @@ This file performs all the backend operations in relation to the project
 import os
 from huggingface_hub import InferenceClient
 from PIL import Image,ImageTk
+os.environ["HF_TOKEN"]="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"
+
+hf_token = os.environ.get("HF_TOKEN")
 
 def log_action(func):
     """Decorator to log the action being performed"""
@@ -30,7 +33,7 @@ class ModelHandler:
     """Base model handler"""
     def __init__(self):
     #api key variable using protect encapsulation
-        self._api_key_value="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"
+        self._api_key_value=hf_token
     def run_inference(self,model_details,input_data):
         raise NotImplementedError("Subclasses must override this method")
 
@@ -151,8 +154,4 @@ class model_inference:
                 else:
                     self.text_model_details={"provider":"hf-inference","model":"google/pegasus-large"}  
                     return (self.text_model_details,self.model_name)
-
                     
-
-
-
