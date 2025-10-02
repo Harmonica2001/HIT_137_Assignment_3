@@ -30,7 +30,7 @@ class ModelHandler:
     """Base model handler"""
     def __init__(self):
     #api key variable using protect encapsulation
-        self._api_key_value="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"
+        self._api_key_value="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"
     def run_inference(self,model_details,input_data):
         raise NotImplementedError("Subclasses must override this method")
 
@@ -151,4 +151,5 @@ class model_inference:
                 else:
                     self.text_model_details={"provider":"hf-inference","model":"google/pegasus-large"}  
                     return (self.text_model_details,self.model_name)
+
                     
