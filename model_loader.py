@@ -30,7 +30,7 @@ class ModelHandler:
     """Base model handler"""
     def __init__(self):
     #api key variable using protect encapsulation
-        self._api_key_value="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"
+        self._api_key_value="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"
     def run_inference(self,model_details,input_data):
         raise NotImplementedError("Subclasses must override this method")
 
@@ -153,3 +153,4 @@ class model_inference:
                     return (self.text_model_details,self.model_name)
 
                     
+
