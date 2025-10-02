@@ -20,8 +20,7 @@ def log_action(func):
     return wrapper
 
 
-# Validating input before running a model, making sure that the text box
-# contains some content so empty submissions do not break the workflow.
+# Validating input before running a model, making sure that the text box contains some content so empty submissions do not break the system.
 def validate_input(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -81,8 +80,7 @@ class AIApp(tk.Tk):
         )
         self.model_dropdown.pack(side="left", padx=5, pady=5)
 
-        ttk.Button(model_frame, text="Load Model", command=self.inference_runner)\
-            .pack(side="left", padx=6, pady=5)
+        ttk.Button(model_frame, text="Load Model", command=self.inference_runner).pack(side="left", padx=6, pady=5)
 
         # Creating an input section for entering text or browsing files.
         input_frame = ttk.LabelFrame(
